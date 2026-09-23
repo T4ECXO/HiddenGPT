@@ -1,0 +1,95 @@
+<Window x:Class="HiddenGPT.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="HiddenGPT" Height="820" Width="1240" MinHeight="520" MinWidth="760"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="False" WindowStyle="None"
+        AllowsTransparency="True" ResizeMode="CanResizeWithGrip"
+        Background="Transparent" Foreground="#F4F4F5" PreviewMouseWheel="VirtualCursor_MouseWheel">
+    <Grid x:Name="RootGrid" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border x:Name="SettingsBar" Grid.Row="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,1,1,1" Padding="7" MouseLeftButtonDown="WindowHeader_MouseLeftButtonDown">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <Button x:Name="BackButton" Content="←" ToolTip="Back" Click="Back_Click" />
+                    <Button x:Name="ForwardButton" Content="→" ToolTip="Forward" Click="Forward_Click" />
+                    <Button Content="↻" ToolTip="Reload" Click="Reload_Click" />
+                    <Button Content="Test page" Click="TestPage_Click" />
+                    <Button x:Name="ChatGptButton" Content="Open ChatGPT" Click="ChatGpt_Click" IsEnabled="False"
+                            ToolTip="Wait for the protected browser to finish starting" />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="−" ToolTip="Zoom out" Click="ZoomOut_Click" />
+                    <TextBlock x:Name="ZoomText" Text="100%" Width="48" TextAlignment="Center" VerticalAlignment="Center" />
+                    <Button Content="+" ToolTip="Zoom in" Click="ZoomIn_Click" />
+                    <TextBlock Text="Transparency" Margin="10,0,4,0" VerticalAlignment="Center" Foreground="#A1A1AA" />
+                    <Slider x:Name="OpacitySlider" Width="110" Minimum="0.25" Maximum="1" Value="0.85"
+                            TickFrequency="0.05" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            ToolTip="Adjust transparency of the browser and ChatGPT; lower values reveal apps behind it"
+                            ValueChanged="Opacity_Changed" />
+                    <TextBlock x:Name="OpacityText" Text="85%" Width="42" TextAlignment="Center" VerticalAlignment="Center" />
+                    <CheckBox x:Name="TopmostCheckBox" Content="Always on top" Checked="Topmost_Changed" Unchecked="Topmost_Changed" />
+                    <Button x:Name="HideButton" Content="Hide (Ctrl+Alt+H)" ToolTip="Ctrl+Alt+H: hide/show" Click="Hide_Click" />
+                    <Button Content="Clear session" Click="ClearSession_Click" />
+                    <Button Content="—" ToolTip="Minimize" Click="Minimize_Click" />
+                    <Button Content="□" ToolTip="Maximize or restore" Click="MaximizeRestore_Click" />
+                    <Button Content="×" ToolTip="Close" Click="Close_Click" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Border x:Name="CaptureStatusBar" Grid.Row="1" Background="#111113" Padding="10,7"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <TextBlock x:Name="CaptureStatus" Text="● Applying capture exclusion…" Foreground="#FBBF24" FontWeight="SemiBold" />
+                <CheckBox x:Name="CaptureTestCheckBox" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                          Content="Recording / screen-share test completed" Checked="CaptureTest_Changed" Unchecked="CaptureTest_Changed" />
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid x:Name="BrowserHost" Opacity="0" IsHitTestVisible="False">
+                <wv2:WebView2CompositionControl x:Name="Browser"
+                                                NavigationCompleted="Browser_NavigationCompleted" />
+            </Grid>
+            <Border x:Name="StartupPanel" Background="#09090B" Padding="36">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="620">
+                    <TextBlock x:Name="StartupTitle" Text="Preparing protected browser…" FontSize="24" FontWeight="SemiBold" TextAlignment="Center" />
+                    <TextBlock x:Name="StartupMessage" Margin="0,14,0,0" Foreground="#A1A1AA" FontSize="14" TextWrapping="Wrap" TextAlignment="Center"
+                               Text="Browser content stays hidden until Windows accepts capture exclusion." />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="3" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="10,6"
+                Opacity="{Binding Value, ElementName=OpacitySlider, Mode=OneWay}">
+            <DockPanel>
+                <TextBlock x:Name="PageStatus" Text="Starting…" Foreground="#A1A1AA" TextTrimming="CharacterEllipsis" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="ViewOnlyButton" Content="View only (Mouse 4)" Click="ViewOnly_Click"
+                            ToolTip="Toggle click-through view-only mode. Mouse 4 or Ctrl+Alt+P returns to typing." />
+                    <Button x:Name="LearnMouseButton" Content="Set mouse button" Click="LearnMouse_Click"
+                            ToolTip="Click here, then press and release your preferred side button" />
+                    <CheckBox x:Name="CursorLockCheckBox" Content="Virtual cursor" Margin="0,0,12,0"
+                              ToolTip="Keep the Windows cursor at the window edge and use an in-app cursor; Ctrl+Alt+M toggles"
+                              Checked="CursorLock_Changed" Unchecked="CursorLock_Changed" />
+                    <TextBlock x:Name="InteractionModeText" Text="Interactive — Mouse 4 to view only" Foreground="#A1A1AA" VerticalAlignment="Center" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Canvas x:Name="VirtualCursorLayer" Grid.RowSpan="4" Panel.ZIndex="1000"
+                Background="Transparent" Visibility="Collapsed">
+            <Path x:Name="VirtualCursorVisual" Width="18" Height="26" Stretch="Fill"
+                  Fill="White" Stroke="Black" StrokeThickness="1.5"
+                  Data="M 1,1 L 1,21 L 6,16 L 10,25 L 14,23 L 10,15 L 18,15 Z" />
+        </Canvas>
+    </Grid>
+</Window>
