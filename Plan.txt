@@ -1,0 +1,46 @@
+Plan: build a Windows 11 app that opens ChatGPT Work in its own browser window and requests exclusion from Discord’s full-screen capture. This is the plan only; nothing has been built yet.
+
+Build a small proof of concept first
+
+Use C# + WPF + Microsoft WebView2 for the window and embedded browser. Microsoft documents this combination for Windows applications. WebView2 documentation
+
+Start with a harmless test page so we can check capture behavior before signing in.
+
+Add capture exclusion
+
+Apply SetWindowDisplayAffinity(..., WDA_EXCLUDEFROMCAPTURE) before displaying browser content.
+
+Enable it by default. If Windows rejects the setting, keep the browser content hidden and show an error. A successful API call means Windows accepted the request—not that Discord’s output has been verified. Windows documentation
+
+Test Discord’s actual stream
+
+Check the stream from another device or viewer while sharing the entire monitor.
+
+Test	Required result
+Open and use the window	Visible locally; absent from the stream
+Move, resize, maximize, minimize	No content flashes in the stream
+Restart the app during sharing	No exposed startup content
+Menus and additional windows	Excluded or prevented from opening
+Desktop behind the window	Remains visible to viewers
+
+If the window appears or leaves an unacceptable blank rectangle, resolve that before continuing.
+
+Check ChatGPT Work compatibility
+
+Open ChatGPT and test normal sign-in, Work access, conversations, and the features you use. Embedded-browser compatibility is still unverified.
+
+Store the session in a dedicated local browser profile, with a Clear session button. WebView2 supports separate user-data folders for cookies and browser storage. Profile documentation
+
+If sign-in is unsupported, reassess the browser approach.
+
+Add the everyday controls
+
+Include back, forward, reload, zoom, optional always-on-top, and a show/hide shortcut. Show separate statuses for “capture exclusion enabled” and “Discord test completed.”
+
+File dialogs, external links, and system notifications need separate handling because they may appear outside the excluded window.
+
+Package the tested version
+
+Deliver the Windows executable, source code, setup instructions, and a short stream-verification checklist. Check for the WebView2 runtime during setup.
+
+Scope: this would protect the custom window. It would not automatically hide your existing ChatGPT desktop app or normal browser windows. Final verification must happen on your Windows 11 machine with Discord running.
